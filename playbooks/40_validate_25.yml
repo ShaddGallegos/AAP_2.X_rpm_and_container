@@ -1,0 +1,6 @@
+---
+- name: Validate AAP 2.5 functionality
+  hosts: aap_nodes
+  gather_facts: true
+  roles:
+    - role: aap_validate

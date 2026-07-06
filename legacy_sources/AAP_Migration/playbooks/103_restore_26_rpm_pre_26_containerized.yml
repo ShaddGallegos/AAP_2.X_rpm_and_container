@@ -1,0 +1,10 @@
+---
+- name: Restore AAP 2.6 RPM backup (for 2.6 containerized migration rollback)
+  hosts: aap_primary
+  gather_facts: true
+  vars:
+    aap_installer_dir: "{{ aap26_installer_dir }}"
+    aap_installer_inventory: "{{ aap26_installer_inventory_rpm }}"
+    aap_restore_command: "{{ aap26_restore_command }}"
+  roles:
+    - role: aap_restore

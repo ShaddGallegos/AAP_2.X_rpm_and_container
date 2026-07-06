@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: sgallego
+  description: Full migration from AAP 2.5 RPM to AAP 2.6 containerized
+  license: MIT
+  min_ansible_version: '2.14'
+  platforms:
+    - name: EL
+      versions:
+        - '9'
+
+dependencies: []

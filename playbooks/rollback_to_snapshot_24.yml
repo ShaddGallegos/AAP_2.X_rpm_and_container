@@ -1,0 +1,8 @@
+---
+- name: Roll back all VMs to PRE_2.4 snapshot
+  hosts: localhost
+  gather_facts: false
+  vars:
+    vmware_snapshot_name: "{{ lookup('file', playbook_dir + '/../reports/last_snapshot_pre_24.txt') | trim }}"
+  roles:
+    - role: vmware_snapshot_revert

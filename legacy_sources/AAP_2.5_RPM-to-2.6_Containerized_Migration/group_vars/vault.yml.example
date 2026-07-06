@@ -1,0 +1,22 @@
+---
+# Copy this file to group_vars/vault.yml and encrypt it:
+# ansible-vault encrypt group_vars/vault.yml
+
+vault_controller_admin_password: "REPLACE_ME"
+vault_postgresql_admin_password: "REPLACE_ME"
+
+vault_registry_user: "REPLACE_ME"
+vault_registry_password: "REPLACE_ME"
+
+vault_gateway_admin_password: "REPLACE_ME"
+vault_hub_admin_password: "REPLACE_ME"
+vault_eda_admin_password: "REPLACE_ME"
+
+vault_gateway_pg_username: "REPLACE_ME"
+vault_gateway_pg_password: "REPLACE_ME"
+vault_controller_pg_username: "REPLACE_ME"
+vault_controller_pg_password: "REPLACE_ME"
+vault_hub_pg_username: "REPLACE_ME"
+vault_hub_pg_password: "REPLACE_ME"
+vault_eda_pg_username: "REPLACE_ME"
+vault_eda_pg_password: "REPLACE_ME"

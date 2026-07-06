@@ -1,0 +1,26 @@
+---
+- name: Upgrade AAP 2.5 -> 2.6
+  hosts: aap_primary
+  gather_facts: true
+  vars:
+    stage_label: "upgrade_25_to_26"
+    stage_name: "2.6"
+    aap_installer_dir: "{{ aap26_installer_dir }}"
+    aap_installer_inventory: "{{ aap26_installer_inventory }}"
+
+  roles:
+    - role: aap_installer_run
+      vars:
+        aap_setup_extra_args: ""
+
+    - role: aap_validate
+
+- name: Write 2.6 report
+  hosts: localhost
+  gather_facts: false
+  vars:
+    stage_name: "2.6"
+    report_dir: "{{ playbook_dir }}/../reports"
+    snapshot_name: "{{ lookup('file', playbook_dir + '/../reports/last_snapshot_pre_26.txt', errors='ignore') | default('') | trim }}"
+  roles:
+    - role: migration_report

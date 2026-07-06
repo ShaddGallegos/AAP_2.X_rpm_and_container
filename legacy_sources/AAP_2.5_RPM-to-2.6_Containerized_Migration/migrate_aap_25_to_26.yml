@@ -1,0 +1,10 @@
+---
+- name: Run full AAP 2.5 RPM to 2.6 containerized migration
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - group_vars/all.yml
+
+  roles:
+    - role: aap_25_to_26_migration

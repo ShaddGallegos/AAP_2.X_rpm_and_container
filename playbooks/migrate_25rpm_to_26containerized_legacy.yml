@@ -1,0 +1,17 @@
+---
+# Orchestrator playbook: 2.5 RPM -> 2.6 containerized (legacy export/import flow)
+
+- name: Step 00 - Platform detection and controller prep
+  import_playbook: 00_platform_setup.yml
+
+- name: Step 01 - Backup + sosreport on 2.5
+  import_playbook: 60_backup_25.yml
+
+- name: Step 02 - Upgrade 2.5 RPM -> 2.6 containerized (legacy)
+  import_playbook: 98_upgrade_25_rpm_to_26_containerized_legacy.yml
+
+- name: Step 03 - Validate 2.6 platform
+  import_playbook: 80_validate_26.yml
+
+- name: Step 04 - Smoke test 2.6 controller API
+  import_playbook: 82_smoke_test_26.yml

@@ -1,0 +1,17 @@
+---
+# Orchestrator playbook: 2.6 containerized -> 2.6 OpenShift
+
+- name: Step 00a - Prompt for credentials
+  import_playbook: 01_prompt_credentials.yml
+
+- name: Step 00b - Fetch Controller API token (optional)
+  import_playbook: 02_fetch_controller_token.yml
+
+- name: Step 00 - Platform detection and controller prep
+  import_playbook: 00_platform_setup.yml
+
+- name: Step 01 - Backup + sosreport on 2.6 containerized (pre-2.6 OpenShift)
+  import_playbook: 96_backup_26_containerized_pre_26_openshift.yml
+
+- name: Step 02 - Upgrade 2.6 containerized -> 2.6 OpenShift
+  import_playbook: 102_upgrade_26_containerized_to_26_openshift.yml

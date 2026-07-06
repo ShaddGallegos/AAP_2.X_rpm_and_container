@@ -1,0 +1,12 @@
+---
+- name: Restore AAP 2.6 containerized backup (for 2.7 containerized migration rollback)
+  hosts: aap_primary
+  gather_facts: true
+  vars:
+    # Provide at runtime, example:
+    # -e aap_restore_from=/var/tmp/aap_migration_backups/<backup_file>
+    aap_installer_dir: "{{ aap26_installer_dir }}"
+    aap_installer_inventory: "{{ aap26_installer_inventory_containerized }}"
+    aap_restore_command: "{{ aap26_restore_command }}"
+  roles:
+    - role: aap_restore

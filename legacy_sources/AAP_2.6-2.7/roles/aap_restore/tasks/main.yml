@@ -1,0 +1,35 @@
+---
+- name: Validate AAP restore inputs
+  ansible.builtin.assert:
+    that:
+      - aap_installer_dir | length > 0
+      - aap_restore_from | length > 0
+    fail_msg: "aap_installer_dir and aap_restore_from must be set"
+
+- name: Resolve restore command path
+  ansible.builtin.set_fact:
+    _aap_restore_command: "{{ aap_restore_command | default('') | trim if (aap_restore_command is defined) else '' }}"
+
+- name: Default restore command path to setup.sh
+  ansible.builtin.set_fact:
+    _aap_restore_command: "{{ aap_installer_dir }}/setup.sh"
+  when: _aap_restore_command | length == 0
+
+- name: Check restore command exists
+  ansible.builtin.stat:
+    path: "{{ _aap_restore_command }}"
+  register: _restore_cmd
+
+- name: Fail if restore command is missing
+  ansible.builtin.fail:
+    msg: "Restore command not found at {{ _aap_restore_command }}"
+  when: not _restore_cmd.stat.exists
+
+- name: Run AAP restore via installer (setup.sh -r)
+  ansible.builtin.command: >-
+    {{ _aap_restore_command }}
+    -r
+    -i {{ aap_installer_dir }}/{{ aap_installer_inventory }}
+    --restore-file {{ aap_restore_from }}
+  register: _restore_run
+  changed_when: true

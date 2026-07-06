@@ -1,0 +1,18 @@
+---
+# Controller API settings (recommended)
+aap_controller_url: ""
+aap_api_token: ""
+validate_tls: false
+
+# Optional: if set, the role will launch this existing Job Template and verify it completes
+smoke_job_template_id: ""
+
+# Polling
+smoke_poll_delay: 5
+smoke_poll_retries: 120  # 10 minutes
+
+# Artifact directory (control node)
+artifact_dir_local: "{{ playbook_dir }}/../reports"
+
+# Label used for report naming
+smoke_stage_label: "smoke"

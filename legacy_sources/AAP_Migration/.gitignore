@@ -1,0 +1,12 @@
+# Artifacts
+reports/
+backups/
+sosreports/
+*.log
+
+# Secrets
+*.vault
+vars/secret*.yml
+
+# Misc
+*.retry

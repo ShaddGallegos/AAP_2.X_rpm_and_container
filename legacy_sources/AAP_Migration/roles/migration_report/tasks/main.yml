@@ -1,0 +1,24 @@
+---
+- name: Validate stage name
+  ansible.builtin.assert:
+    that:
+      - stage_name is defined
+      - stage_name | length > 0
+    fail_msg: "stage_name is required"
+
+- name: Ensure report dir exists
+  ansible.builtin.file:
+    path: "{{ report_dir }}"
+    state: directory
+    mode: '0755'
+  delegate_to: localhost
+  run_once: true
+
+- name: Render stage report
+  ansible.builtin.template:
+    src: stage_report.md.j2
+    dest: "{{ report_dir }}/{{ lookup('pipe','date +%Y%m%d_%H%M%S') }}_{{ stage_name }}_report.md"
+  delegate_to: localhost
+  run_once: true
+  vars:
+    artifact_dir: "{{ report_dir }}"

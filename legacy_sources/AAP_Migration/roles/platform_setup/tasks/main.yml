@@ -1,0 +1,146 @@
+---
+- name: Pick a target host to detect platform
+  ansible.builtin.set_fact:
+    _detect_host: "{{ (groups['aap_nodes'] | default([])) | first | default(inventory_hostname) }}"
+
+- name: Gather hardware/virtualization facts from target
+  ansible.builtin.setup:
+    gather_subset:
+      - hardware
+      - virtual
+  delegate_to: "{{ _detect_host }}"
+  register: _detected
+
+- name: Probe AWS metadata
+  ansible.builtin.uri:
+    url: "http://169.254.169.254/latest/meta-data/"
+    method: GET
+    timeout: 1
+    return_content: false
+  delegate_to: "{{ _detect_host }}"
+  register: _aws_md
+  failed_when: false
+  changed_when: false
+
+- name: Probe GCP metadata
+  ansible.builtin.uri:
+    url: "http://169.254.169.254/computeMetadata/v1/"
+    method: GET
+    headers:
+      Metadata-Flavor: Google
+    timeout: 1
+    return_content: false
+  delegate_to: "{{ _detect_host }}"
+  register: _gcp_md
+  failed_when: false
+  changed_when: false
+
+- name: Probe Azure metadata
+  ansible.builtin.uri:
+    url: "http://169.254.169.254/metadata/instance?api-version=2021-02-01"
+    method: GET
+    headers:
+      Metadata: "true"
+    timeout: 1
+    return_content: false
+  delegate_to: "{{ _detect_host }}"
+  register: _azure_md
+  failed_when: false
+  changed_when: false
+
+- name: Decide platform from metadata and DMI facts
+  vars:
+    vendor: "{{ _detected.ansible_facts.ansible_system_vendor | default('') }}"
+    product: "{{ _detected.ansible_facts.ansible_product_name | default('') }}"
+    vtype: "{{ _detected.ansible_facts.ansible_virtualization_type | default('') }}"
+  ansible.builtin.set_fact:
+    infra_platform: >-
+      {% if (_aws_md.status | default(0)) in [200, 401, 403] %}aws
+      {% elif (_gcp_md.status | default(0)) in [200, 401, 403] %}gcp
+      {% elif (_azure_md.status | default(0)) in [200, 401, 403] %}azure
+      {% elif 'VMware' in vendor or 'VMware' in product %}vmware
+      {% elif 'Nutanix' in vendor or 'AHV' in product %}nutanix
+      {% elif vtype in ['kvm','qemu'] %}libvirt
+      {% else %}baremetal
+      {% endif %}
+
+- name: Show detected platform
+  ansible.builtin.debug:
+    msg: "Detected infrastructure platform: {{ infra_platform }} (via {{ _detect_host }})"
+
+# Optionally render ansible.cfg with RH Automation Hub token if provided
+- name: Check for ansible.cfg template
+  ansible.builtin.stat:
+    path: "{{ project_root }}/templates/ansible.cfg.j2"
+  delegate_to: localhost
+  register: _cfg_tmpl
+
+- name: Render ansible.cfg with token
+  when:
+    - _cfg_tmpl.stat.exists
+    - redhat_automation_hub_token | length > 0
+  ansible.builtin.template:
+    src: "{{ project_root }}/templates/ansible.cfg.j2"
+    dest: "{{ project_root }}/ansible.cfg"
+    mode: '0644'
+  delegate_to: localhost
+
+# Enable EPEL and CRB for RHEL 9/10 as needed
+- name: Gather controller facts
+  ansible.builtin.setup:
+    gather_subset: min
+  delegate_to: localhost
+
+- name: Enable CRB (CodeReady Builder) on RHEL
+  when:
+    - enable_crb | bool
+    - ansible_facts['os_family'] == 'RedHat'
+  ansible.builtin.command:
+    cmd: "subscription-manager repos --enable codeready-builder-for-rhel-{{ ansible_facts['distribution_major_version'] }}-{{ ansible_facts['architecture'] }}-rpms"
+  register: _crb
+  failed_when: false
+  changed_when: "'enabled' in (_crb.stdout | default(''))"
+
+- name: Ensure EPEL repo is available
+  when:
+    - enable_epel | bool
+    - ansible_facts['os_family'] == 'RedHat'
+  block:
+    - name: Try to install epel-release from repos
+      ansible.builtin.dnf:
+        name: epel-release
+        state: present
+      register: _epel_pkg
+      failed_when: false
+    - name: Install EPEL RPM directly if not present
+      when: _epel_pkg is failed or _epel_pkg is skipped
+      ansible.builtin.dnf:
+        name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_facts['distribution_major_version'] }}.noarch.rpm"
+        state: present
+
+# Install OS packages
+- name: Install base and platform OS packages (RHEL 9/10)
+  ansible.builtin.dnf:
+    name: "{{ base_os_packages + (platform_os_packages[infra_platform] | default([])) }}"
+    state: present
+  delegate_to: localhost
+  become: true
+
+# Install Python packages
+- name: Install required Python packages
+  ansible.builtin.pip:
+    name: "{{ base_pip_packages + (platform_pip_packages[infra_platform] | default([])) }}"
+    extra_args: "{{ pip_extra_args }}"
+    executable: pip3
+  delegate_to: localhost
+
+# Install Ansible collections
+- name: Ensure collections for base + platform are installed
+  vars:
+    combined_collections: "{{ (base_collections + (platform_collections[infra_platform] | default([]))) | unique }}"
+  ansible.builtin.command: >
+    ansible-galaxy collection install {{ combined_collections | join(' ') }}
+  environment:
+    ANSIBLE_CONFIG: "{{ project_root }}/ansible.cfg"
+  delegate_to: localhost
+  changed_when: true

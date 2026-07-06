@@ -1,0 +1,7 @@
+---
+- name: Run AAP healthcheck and optional tuning
+  hosts: aap_nodes
+  gather_facts: true
+  become: true
+  roles:
+    - role: aap_healthcheck

@@ -1,0 +1,11 @@
+---
+- name: Write final migration report (2.6 complete)
+  hosts: localhost
+  gather_facts: false
+  vars:
+    stage_name: "2.6_final"
+    report_dir: "{{ playbook_dir }}/../reports"
+    snapshot_name: "{{ lookup('file', playbook_dir + '/../reports/last_snapshot_pre_26.txt', errors='ignore') | default('') | trim }}"
+    backup_dir_remote: "{{ backup_dir_remote | default('/var/tmp/aap_migration_backups') }}"
+  roles:
+    - role: migration_report

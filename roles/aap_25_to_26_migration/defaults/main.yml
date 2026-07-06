@@ -1,0 +1,104 @@
+---
+# Control behavior
+aap_25_to_26_migration_run_preflight: true
+aap_25_to_26_migration_dry_run: false
+aap_25_to_26_migration_validate_certs: false
+aap_25_to_26_migration_backup_old_rpm: true
+aap_25_to_26_migration_export_old_config: true
+aap_25_to_26_migration_import_new_config: true
+aap_25_to_26_migration_run_installer: true
+aap_25_to_26_migration_verify_after_install: true
+aap_25_to_26_migration_wait_for_gateway: true
+aap_25_to_26_migration_fetch_backup_artifact: false
+
+# Endpoints and hosts
+aap_25_to_26_migration_old_rpm_host: old-aap-25.example.com
+aap_25_to_26_migration_new_container_host: new-aap.example.com
+
+# Installer paths
+aap_25_to_26_migration_old_installer_dir: /opt/ansible-automation-platform/installer
+aap_25_to_26_migration_new_installer_dir: /opt/ansible-automation-platform/installer
+aap_25_to_26_migration_inventory_remote_path: "{{ aap_25_to_26_migration_new_installer_dir }}/inventory"
+
+# Local workspace paths (relative to playbook dir by default)
+aap_25_to_26_migration_export_dir: "{{ playbook_dir }}/aap_25_to_26_migration_data"
+aap_25_to_26_migration_rendered_inventory_path: "{{ playbook_dir }}/.generated_aap26_inventory"
+aap_25_to_26_migration_backup_local_dir: "{{ playbook_dir }}/backups"
+
+# API auth
+aap_25_to_26_migration_controller_username: admin
+aap_25_to_26_migration_controller_password: "{{ vault_controller_admin_password | default('change-me') }}"
+
+# Installer execution
+aap_25_to_26_migration_installer_async_timeout: 7200
+aap_25_to_26_migration_installer_poll_seconds: 30
+
+# Gateway readiness check
+aap_25_to_26_migration_gateway_health_path: /api/gateway/v1/health/
+aap_25_to_26_migration_gateway_retries: 30
+aap_25_to_26_migration_gateway_delay: 20
+
+# Import order for infra.controller_configuration.dispatch
+aap_25_to_26_migration_dispatch_roles:
+  - organizations
+  - teams
+  - users
+  - credential_types
+  - credentials
+  - execution_environments
+  - projects
+  - inventories
+  - inventory_sources
+  - job_templates
+  - schedules
+
+# Inventory template variables
+aap_25_to_26_migration_deployment_type: single_node
+aap_25_to_26_migration_postgresql_admin_username: postgres
+aap_25_to_26_migration_postgresql_admin_password: "{{ vault_postgresql_admin_password | default('change-me') }}"
+aap_25_to_26_migration_bundle_install: true
+aap_25_to_26_migration_bundle_dir: "{{ lookup('ansible.builtin.env', 'PWD') }}/bundle"
+aap_25_to_26_migration_redis_mode: standalone
+aap_25_to_26_migration_controller_percent_memory_capacity: 0.5
+aap_25_to_26_migration_hub_seed_collections: false
+
+# Platform credentials
+aap_25_to_26_migration_gateway_admin_password: "{{ vault_gateway_admin_password | default('change-me') }}"
+aap_25_to_26_migration_controller_admin_password: "{{ vault_controller_admin_password | default('change-me') }}"
+aap_25_to_26_migration_hub_admin_password: "{{ vault_hub_admin_password | default('change-me') }}"
+aap_25_to_26_migration_eda_admin_password: "{{ vault_eda_admin_password | default('change-me') }}"
+
+# Registry
+aap_25_to_26_migration_registry_url: registry.redhat.io
+aap_25_to_26_migration_registry_username: "{{ vault_registry_user | default('') }}"
+aap_25_to_26_migration_registry_password: "{{ vault_registry_password | default('') }}"
+
+# Growth DB defaults
+aap_25_to_26_migration_external_db_host: externaldb.example.org
+aap_25_to_26_migration_gateway_pg_host: "{{ aap_25_to_26_migration_external_db_host }}"
+aap_25_to_26_migration_gateway_pg_database: gateway
+aap_25_to_26_migration_gateway_pg_username: "{{ vault_gateway_pg_username | default('gateway') }}"
+aap_25_to_26_migration_gateway_pg_password: "{{ vault_gateway_pg_password | default('change-me') }}"
+aap_25_to_26_migration_controller_pg_host: "{{ aap_25_to_26_migration_external_db_host }}"
+aap_25_to_26_migration_controller_pg_database: controller
+aap_25_to_26_migration_controller_pg_username: "{{ vault_controller_pg_username | default('controller') }}"
+aap_25_to_26_migration_controller_pg_password: "{{ vault_controller_pg_password | default('change-me') }}"
+aap_25_to_26_migration_hub_pg_host: "{{ aap_25_to_26_migration_external_db_host }}"
+aap_25_to_26_migration_hub_pg_database: hub
+aap_25_to_26_migration_hub_pg_username: "{{ vault_hub_pg_username | default('hub') }}"
+aap_25_to_26_migration_hub_pg_password: "{{ vault_hub_pg_password | default('change-me') }}"
+aap_25_to_26_migration_eda_pg_host: "{{ aap_25_to_26_migration_external_db_host }}"
+aap_25_to_26_migration_eda_pg_database: eda
+aap_25_to_26_migration_eda_pg_username: "{{ vault_eda_pg_username | default('eda') }}"
+aap_25_to_26_migration_eda_pg_password: "{{ vault_eda_pg_password | default('change-me') }}"
+
+# Single-node DB host defaults
+aap_25_to_26_migration_single_node_host: "{{ aap_25_to_26_migration_new_container_host }}"
+
+# Optional LDAP variables (used by template if defined)
+# aap_25_to_26_migration_gateway_auth_ldap_enabled: true
+# aap_25_to_26_migration_gateway_auth_ldap_server_uri: ldaps://ad.example.com:636
+# aap_25_to_26_migration_gateway_auth_ldap_bind_dn: CN=svc_aap,OU=ServiceAccounts,DC=example,DC=com
+# aap_25_to_26_migration_gateway_auth_ldap_bind_password: "{{ vault_ldap_bind_password }}"
+# aap_25_to_26_migration_gateway_auth_ldap_user_search_base: OU=Users,DC=example,DC=com
+# aap_25_to_26_migration_gateway_auth_ldap_user_search_filter: (sAMAccountName=%(user)s)

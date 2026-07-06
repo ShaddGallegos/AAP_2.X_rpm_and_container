@@ -1,0 +1,4 @@
+---
+- name: Run project vmware_snapshot_revert role tasks
+  ansible.builtin.include_tasks:
+    file: "{{ role_path }}/../../../roles/vmware_snapshot_revert/tasks/main.yml"

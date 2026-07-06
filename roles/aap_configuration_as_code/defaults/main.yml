@@ -1,0 +1,12 @@
+---
+cac_output_dir: "{{ playbook_dir }}/../config_as_code"
+cac_export_controller: true
+cac_controller_url: "{{ aap_controller_url | default('') }}"
+cac_controller_token: "{{ aap_api_token | default(vault_aap_api_token | default('')) }}"
+cac_validate_tls: false
+
+# Rebuild defaults
+cac_rebuild_installer_dir: "{{ aap27_installer_dir | default(aap26_installer_dir | default('')) }}"
+cac_rebuild_installer_inventory: "{{ aap27_installer_inventory_containerized_to_containerized | default(aap26_installer_inventory | default('inventory')) }}"
+cac_rebuild_installer_command: "{{ aap27_installer_command | default('') }}"
+cac_rebuild_setup_extra_args: ""

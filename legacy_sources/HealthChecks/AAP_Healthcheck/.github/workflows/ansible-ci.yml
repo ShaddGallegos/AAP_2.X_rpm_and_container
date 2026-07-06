@@ -1,0 +1,39 @@
+name: Ansible CI
+
+on:
+  push:
+    paths:
+      - '**.yml'
+      - '.github/**'
+  pull_request:
+    paths:
+      - '**.yml'
+      - '.github/**'
+
+jobs:
+  lint:
+    # RHEL-only policy: use self-hosted RHEL runners
+    runs-on: [self-hosted, rhel]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run yamllint
+        run: |
+          yamllint -c .yamllint -f parsable . || true
+
+      - name: Run ansible-lint
+        run: |
+          ansible-lint aap_production_orchestrator.yml || true
+
+      - name: Syntax check
+        run: |
+          ansible-playbook --syntax-check aap_production_orchestrator.yml || true

@@ -1,0 +1,19 @@
+---
+# Copy to group_vars/vault.yml and encrypt with Ansible Vault:
+#   cp group_vars/vault.yml.example group_vars/vault.yml
+#   ansible-vault encrypt group_vars/vault.yml
+
+# VMware and API auth
+vault_vcenter_password: "CHANGE_ME"
+vault_aap_api_token: "CHANGE_ME"
+vault_openshift_api_token: "CHANGE_ME"
+
+# Registry credentials for containerized installer pulls
+vault_registry_username: "CHANGE_ME"
+vault_registry_password: "CHANGE_ME"
+
+# AAP platform credentials
+vault_aap_admin_password: "CHANGE_ME"
+vault_pg_password: "CHANGE_ME"
+vault_automationhub_pg_password: "CHANGE_ME"
+vault_automationhub_admin_password: "CHANGE_ME"

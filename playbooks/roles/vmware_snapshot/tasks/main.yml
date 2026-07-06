@@ -1,0 +1,8 @@
+---
+- name: Load defaults from project role
+  ansible.builtin.include_vars:
+    file: "{{ role_path }}/../../../roles/vmware_snapshot/defaults/main.yml"
+
+- name: Run project vmware_snapshot role tasks
+  ansible.builtin.include_tasks:
+    file: "{{ role_path }}/../../../roles/vmware_snapshot/tasks/main.yml"

@@ -1,0 +1,8 @@
+---
+- name: Load defaults from project role
+  ansible.builtin.include_vars:
+    file: "{{ role_path }}/../../../roles/pre_migration_healthcheck/defaults/main.yml"
+
+- name: Run project pre_migration_healthcheck role tasks
+  ansible.builtin.include_tasks:
+    file: "{{ role_path }}/../../../roles/pre_migration_healthcheck/tasks/main.yml"

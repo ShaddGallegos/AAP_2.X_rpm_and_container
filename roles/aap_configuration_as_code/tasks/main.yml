@@ -1,0 +1,115 @@
+---
+- name: Ensure config-as-code output directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0750'
+  loop:
+    - "{{ cac_output_dir }}"
+    - "{{ cac_output_dir }}/group_vars"
+    - "{{ cac_output_dir }}/inventories"
+    - "{{ cac_output_dir }}/playbooks"
+    - "{{ cac_output_dir }}/exports"
+
+- name: Render config-as-code group vars
+  ansible.builtin.template:
+    src: group_vars_all.yml.j2
+    dest: "{{ cac_output_dir }}/group_vars/all.yml"
+    mode: '0640'
+
+- name: Render config-as-code inventory
+  ansible.builtin.template:
+    src: inventory.ini.j2
+    dest: "{{ cac_output_dir }}/inventories/production.ini"
+    mode: '0640'
+
+- name: Render config-as-code rebuild playbook
+  ansible.builtin.template:
+    src: recreate_aap_environment.yml.j2
+    dest: "{{ cac_output_dir }}/playbooks/recreate_aap_environment.yml"
+    mode: '0750'
+
+- name: Render config-as-code README
+  ansible.builtin.template:
+    src: README.md.j2
+    dest: "{{ cac_output_dir }}/README.md"
+    mode: '0644'
+
+- name: Export controller organizations
+  ansible.builtin.uri:
+    url: "{{ cac_controller_url }}/api/v2/organizations/?page_size=200"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ cac_controller_token }}"
+    validate_certs: "{{ cac_validate_tls }}"
+    status_code: [200]
+    return_content: true
+  register: _orgs
+  delegate_to: localhost
+  when:
+    - cac_export_controller | bool
+    - cac_controller_url | length > 0
+    - cac_controller_token | length > 0
+
+- name: Export controller inventories
+  ansible.builtin.uri:
+    url: "{{ cac_controller_url }}/api/v2/inventories/?page_size=200"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ cac_controller_token }}"
+    validate_certs: "{{ cac_validate_tls }}"
+    status_code: [200]
+    return_content: true
+  register: _inventories
+  delegate_to: localhost
+  when:
+    - cac_export_controller | bool
+    - cac_controller_url | length > 0
+    - cac_controller_token | length > 0
+
+- name: Export controller projects
+  ansible.builtin.uri:
+    url: "{{ cac_controller_url }}/api/v2/projects/?page_size=200"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ cac_controller_token }}"
+    validate_certs: "{{ cac_validate_tls }}"
+    status_code: [200]
+    return_content: true
+  register: _projects
+  delegate_to: localhost
+  when:
+    - cac_export_controller | bool
+    - cac_controller_url | length > 0
+    - cac_controller_token | length > 0
+
+- name: Export controller job templates
+  ansible.builtin.uri:
+    url: "{{ cac_controller_url }}/api/v2/job_templates/?page_size=200"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ cac_controller_token }}"
+    validate_certs: "{{ cac_validate_tls }}"
+    status_code: [200]
+    return_content: true
+  register: _job_templates
+  delegate_to: localhost
+  when:
+    - cac_export_controller | bool
+    - cac_controller_url | length > 0
+    - cac_controller_token | length > 0
+
+- name: Write exported controller resources
+  ansible.builtin.copy:
+    dest: "{{ cac_output_dir }}/exports/{{ item.name }}.json"
+    content: "{{ item.data | to_nice_json }}"
+    mode: '0640'
+  loop:
+    - { name: "organizations", data: "{{ _orgs.json | default({}) }}" }
+    - { name: "inventories", data: "{{ _inventories.json | default({}) }}" }
+    - { name: "projects", data: "{{ _projects.json | default({}) }}" }
+    - { name: "job_templates", data: "{{ _job_templates.json | default({}) }}" }
+  when:
+    - cac_export_controller | bool
+    - cac_controller_url | length > 0
+    - cac_controller_token | length > 0

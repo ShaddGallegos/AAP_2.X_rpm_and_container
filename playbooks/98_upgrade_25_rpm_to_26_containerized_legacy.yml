@@ -1,0 +1,9 @@
+---
+- name: Legacy upgrade AAP 2.5 RPM -> 2.6 containerized (export/import aware)
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ../group_vars/all.yml
+  roles:
+    - role: aap_25_to_26_migration

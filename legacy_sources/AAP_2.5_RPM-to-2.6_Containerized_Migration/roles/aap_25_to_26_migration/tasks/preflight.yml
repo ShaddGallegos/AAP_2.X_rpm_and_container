@@ -1,0 +1,69 @@
+---
+- name: Preflight | Verify old installer directory exists
+  ansible.builtin.stat:
+    path: "{{ aap_25_to_26_migration_old_installer_dir }}"
+  register: aap_25_to_26_migration_old_installer_dir_stat
+  delegate_to: "{{ aap_25_to_26_migration_old_rpm_host }}"
+  become: true
+
+- name: Preflight | Assert old installer directory exists
+  ansible.builtin.assert:
+    that:
+      - aap_25_to_26_migration_old_installer_dir_stat.stat.exists
+      - aap_25_to_26_migration_old_installer_dir_stat.stat.isdir
+    fail_msg: "Old installer directory not found: {{ aap_25_to_26_migration_old_installer_dir }}"
+
+- name: Preflight | Verify old setup.sh exists
+  ansible.builtin.stat:
+    path: "{{ aap_25_to_26_migration_old_installer_dir }}/setup.sh"
+  register: aap_25_to_26_migration_old_setup_stat
+  delegate_to: "{{ aap_25_to_26_migration_old_rpm_host }}"
+  become: true
+
+- name: Preflight | Assert old setup.sh exists
+  ansible.builtin.assert:
+    that:
+      - aap_25_to_26_migration_old_setup_stat.stat.exists
+      - aap_25_to_26_migration_old_setup_stat.stat.isreg
+    fail_msg: "setup.sh missing on old host: {{ aap_25_to_26_migration_old_installer_dir }}/setup.sh"
+
+- name: Preflight | Verify new installer directory exists
+  ansible.builtin.stat:
+    path: "{{ aap_25_to_26_migration_new_installer_dir }}"
+  register: aap_25_to_26_migration_new_installer_dir_stat
+  delegate_to: "{{ aap_25_to_26_migration_new_container_host }}"
+  become: true
+
+- name: Preflight | Assert new installer directory exists
+  ansible.builtin.assert:
+    that:
+      - aap_25_to_26_migration_new_installer_dir_stat.stat.exists
+      - aap_25_to_26_migration_new_installer_dir_stat.stat.isdir
+    fail_msg: "New installer directory not found: {{ aap_25_to_26_migration_new_installer_dir }}"
+
+- name: Preflight | Verify new setup.sh exists
+  ansible.builtin.stat:
+    path: "{{ aap_25_to_26_migration_new_installer_dir }}/setup.sh"
+  register: aap_25_to_26_migration_new_setup_stat
+  delegate_to: "{{ aap_25_to_26_migration_new_container_host }}"
+  become: true
+
+- name: Preflight | Assert new setup.sh exists
+  ansible.builtin.assert:
+    that:
+      - aap_25_to_26_migration_new_setup_stat.stat.exists
+      - aap_25_to_26_migration_new_setup_stat.stat.isreg
+    fail_msg: "setup.sh missing on new host: {{ aap_25_to_26_migration_new_installer_dir }}/setup.sh"
+
+- name: Preflight | Verify podman on new host
+  ansible.builtin.command: command -v podman
+  register: aap_25_to_26_migration_podman_cmd
+  delegate_to: "{{ aap_25_to_26_migration_new_container_host }}"
+  become: true
+  changed_when: false
+
+- name: Preflight | Assert podman available
+  ansible.builtin.assert:
+    that:
+      - aap_25_to_26_migration_podman_cmd.rc == 0
+    fail_msg: "Podman not found on new host: {{ aap_25_to_26_migration_new_container_host }}"

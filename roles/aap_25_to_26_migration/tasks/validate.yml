@@ -1,0 +1,36 @@
+---
+- name: Validate Gateway health endpoint
+  ansible.builtin.uri:
+    url: "https://{{ aap_25_to_26_migration_new_container_host }}{{ aap_25_to_26_migration_gateway_health_path }}"
+    method: GET
+    validate_certs: "{{ aap_25_to_26_migration_validate_certs }}"
+    status_code: 200
+
+- name: Validate controller API ping
+  infra.controller_configuration.controller_api_info:
+    controller_host: "https://{{ aap_25_to_26_migration_new_container_host }}"
+    controller_username: "{{ aap_25_to_26_migration_controller_username }}"
+    controller_password: "{{ aap_25_to_26_migration_controller_password }}"
+    validate_certs: "{{ aap_25_to_26_migration_validate_certs }}"
+    config_name: ping
+  register: aap_25_to_26_migration_ping
+
+- name: Assert controller ping returned data
+  ansible.builtin.assert:
+    that:
+      - aap_25_to_26_migration_ping is defined
+    fail_msg: "Controller API ping failed after migration."
+
+- name: Check running containers on new AAP host
+  ansible.builtin.command: podman ps --format '{{ "{{.Names}}" }}'
+  delegate_to: "{{ aap_25_to_26_migration_new_container_host }}"
+  become: true
+  changed_when: false
+  register: aap_25_to_26_migration_podman_ps
+
+- name: Assert key AAP containers are running
+  ansible.builtin.assert:
+    that:
+      - aap_25_to_26_migration_podman_ps.stdout is search('automation-controller')
+      - aap_25_to_26_migration_podman_ps.stdout is search('automation-gateway')
+    fail_msg: "Expected AAP containers are not all running (controller/gateway)."

@@ -1,0 +1,65 @@
+---
+- name: Validate required installer inputs
+  ansible.builtin.assert:
+    that:
+      - aap_installer_dir | length > 0
+      - aap_installer_inventory | length > 0
+    fail_msg: "aap_installer_dir and aap_installer_inventory must be set"
+
+- name: Build oc cli args
+  ansible.builtin.set_fact:
+    _oc_args: >-
+      {{ (' --kubeconfig ' + openshift_kubeconfig) if (openshift_kubeconfig | length > 0) else '' }}
+      {{ (' --context ' + openshift_context) if (openshift_context | length > 0) else '' }}
+  when: openshift_precheck_enabled | bool
+
+- name: Check oc client is installed
+  ansible.builtin.command: oc version --client=true
+  register: _oc_client
+  changed_when: false
+  when: openshift_precheck_enabled | bool
+
+- name: Validate OpenShift login options
+  ansible.builtin.assert:
+    that:
+      - openshift_api_url | length > 0
+      - openshift_api_token | length > 0
+    fail_msg: "openshift_api_url and openshift_api_token are required when openshift_require_login=true"
+  when:
+    - openshift_precheck_enabled | bool
+    - openshift_require_login | bool
+
+- name: Optional OpenShift login with token
+  ansible.builtin.command: >-
+    oc login {{ openshift_api_url }}
+    --token={{ openshift_api_token }}
+    {{ '--insecure-skip-tls-verify=true' if (not openshift_validate_tls | bool) else '' }}
+  register: _oc_login
+  changed_when: "'Login successful' in (_oc_login.stdout | default(''))"
+  no_log: true
+  when:
+    - openshift_precheck_enabled | bool
+    - openshift_require_login | bool
+
+- name: Verify current OpenShift identity
+  ansible.builtin.command: "oc {{ _oc_args | trim }} whoami"
+  register: _oc_whoami
+  changed_when: false
+  when: openshift_precheck_enabled | bool
+
+- name: Optional namespace check
+  ansible.builtin.command: "oc {{ _oc_args | trim }} get namespace {{ openshift_project }}"
+  register: _oc_ns
+  changed_when: false
+  when:
+    - openshift_precheck_enabled | bool
+    - openshift_check_namespace | bool
+
+- name: Run installer for containerized to OpenShift migration
+  ansible.builtin.include_role:
+    name: aap_installer_run
+
+- name: Run post-upgrade validation
+  ansible.builtin.include_role:
+    name: aap_validate
+  when: run_post_upgrade_validation | bool

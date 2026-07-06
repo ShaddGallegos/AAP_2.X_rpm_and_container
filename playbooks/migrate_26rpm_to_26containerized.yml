@@ -1,0 +1,17 @@
+---
+# Orchestrator playbook: 2.6 RPM -> 2.6 containerized
+
+- name: Step 00a - Prompt for credentials
+  import_playbook: 01_prompt_credentials.yml
+
+- name: Step 00b - Fetch Controller API token (optional)
+  import_playbook: 02_fetch_controller_token.yml
+
+- name: Step 00 - Platform detection and controller prep
+  import_playbook: 00_platform_setup.yml
+
+- name: Step 01 - Backup + sosreport on 2.6 RPM (pre-2.6 containerized)
+  import_playbook: 89_backup_26_rpm_pre_26_containerized.yml
+
+- name: Step 02 - Upgrade 2.6 RPM -> 2.6 containerized
+  import_playbook: 100_upgrade_26_rpm_to_26_containerized.yml

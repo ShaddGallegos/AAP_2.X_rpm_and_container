@@ -1,0 +1,15 @@
+---
+- name: Backup AAP 2.6 before 2.7 migration + sosreport
+  hosts: aap_nodes
+  gather_facts: true
+  vars:
+    backup_label: "2.6_pre_2.7"
+    aap_installer_dir: "{{ aap26_installer_dir }}"
+    aap_installer_inventory: "{{ aap26_installer_inventory }}"
+
+  roles:
+    - role: sos_report
+      vars:
+        sos_extra_args: "--all-logs"
+
+    - role: aap_backup

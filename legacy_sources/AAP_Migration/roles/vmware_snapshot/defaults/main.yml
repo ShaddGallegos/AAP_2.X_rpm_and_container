@@ -1,0 +1,14 @@
+---
+# VMware connection
+vcenter_validate_certs: false
+
+# VMs to snapshot
+vmware_vm_names: []
+
+# Snapshot naming
+snapshot_prefix: "AAP_MIG"
+snapshot_label: ""
+
+# Include memory and quiesce (requires VMware tools)
+snapshot_memory: false
+snapshot_quiesce: true

@@ -1,0 +1,16 @@
+# Artifacts
+reports/
+backups/
+sosreports/
+*.log
+
+# Secrets
+*.vault
+vars/secret*.yml
+
+# Misc
+*.retry
+
+# Config-as-code generated artifacts
+config_as_code/
+roles/aap_configuration_as_code/artifacts/

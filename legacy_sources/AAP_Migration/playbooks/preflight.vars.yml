@@ -1,0 +1,6 @@
+aap_nodes_override:
+  - aap-controller-1
+  - aap-gateway-1
+  - aap-hub-1
+aap_ssh_user: ansible
+fix_known_hosts: true

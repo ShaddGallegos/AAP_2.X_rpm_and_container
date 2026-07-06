@@ -1,0 +1,27 @@
+---
+- name: Upgrade AAP 2.6 containerized -> 2.7 containerized
+  hosts: aap_primary
+  gather_facts: true
+  vars:
+    stage_label: "upgrade_26_containerized_to_27_containerized"
+    stage_name: "2.7_containerized"
+    aap_installer_dir: "{{ aap27_installer_dir }}"
+    aap_installer_inventory: "{{ aap27_installer_inventory_containerized_to_containerized }}"
+    aap_installer_command: "{{ aap27_installer_command }}"
+
+  roles:
+    - role: aap_installer_run
+      vars:
+        aap_setup_extra_args: "{{ aap27_setup_extra_args }}"
+
+    - role: aap_validate
+
+- name: Write 2.7 report (from 2.6 containerized)
+  hosts: localhost
+  gather_facts: false
+  vars:
+    stage_name: "2.7_containerized_from_26_containerized"
+    report_dir: "{{ playbook_dir }}/../reports"
+    snapshot_name: "{{ lookup('file', playbook_dir + '/../reports/last_snapshot_pre_27.txt', errors='ignore') | default('') | trim }}"
+  roles:
+    - role: migration_report

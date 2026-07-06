@@ -1,0 +1,7 @@
+---
+# Where to store sosreport archives locally and remotely
+sos_remote_dir: /var/tmp
+sos_local_dir: "{{ playbook_dir }}/../sosreports"
+
+# Extra args for sos report (batch mode is enforced)
+sos_extra_args: "--all-logs"

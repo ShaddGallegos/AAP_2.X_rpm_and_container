@@ -1,0 +1,18 @@
+# AAP Config-as-Code Bundle
+
+This directory was generated from the active AAP migration project and is intended for disaster recovery and environment recreation.
+
+## Contents
+
+- group_vars/all.yml: installer and endpoint variables captured from source project.
+- inventories/production.ini: inventory scaffold generated from current inventory groups.
+- playbooks/recreate_aap_environment.yml: install and validate playbook.
+- exports/*.json: exported AAP controller objects (organizations, inventories, projects, job templates) when API token is available.
+
+## Run
+
+```bash
+ansible-playbook -i inventories/production.ini playbooks/recreate_aap_environment.yml
+```
+
+For imported controller data, use your preferred import workflow (for example infra.controller_configuration.dispatch).

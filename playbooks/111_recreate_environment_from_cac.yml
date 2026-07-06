@@ -1,0 +1,14 @@
+---
+- name: Recreate AAP environment from generated config-as-code defaults
+  hosts: aap_primary
+  gather_facts: true
+  become: true
+  vars:
+    aap_installer_dir: "{{ cac_rebuild_installer_dir | default(aap27_installer_dir | default(aap26_installer_dir)) }}"
+    aap_installer_inventory: "{{ cac_rebuild_installer_inventory | default('inventory') }}"
+    aap_installer_command: "{{ cac_rebuild_installer_command | default('') }}"
+    aap_setup_extra_args: "{{ cac_rebuild_setup_extra_args | default('') }}"
+  roles:
+    - role: aap_installer_run
+
+    - role: aap_validate

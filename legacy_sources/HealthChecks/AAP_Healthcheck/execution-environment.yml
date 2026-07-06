@@ -1,0 +1,37 @@
+---
+version: 3
+
+images:
+  base_image:
+    name: 'registry.redhat.io/ansible-automation-platform-26/ee-minimal-rhel9'
+    options:
+      pull_policy: missing
+      tls_verify: false
+
+additional_build_files:
+  - src: "{{ playbook_dir }}/templates/ansible.cfg.j2"
+    dest: /tmp/configs/ansible.cfg
+
+options:
+  package_manager_path: /usr/bin/microdnf
+
+dependencies:
+  ansible_core:
+    package_pip: ansible-core>=2.16.0
+  ansible_runner:
+    package_pip: ansible-runner>=2.4.0
+  galaxy:
+    collections:
+      - ansible.posix
+      - community.general
+  python:
+    - requests>=2.32.0
+    - urllib3>=2.2.0
+  system:
+    - git-core [platform:rpm]
+    - openssh-clients [platform:rpm]
+    - python3-pip [platform:rpm]
+
+additional_build_steps:
+  prepend_base:
+    - RUN microdnf install -y python3-pip python3-setuptools && microdnf clean all

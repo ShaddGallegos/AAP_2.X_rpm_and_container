@@ -1,0 +1,15 @@
+---
+- name: Backup AAP 2.6 RPM before 2.7 containerized migration + sosreport
+  hosts: aap_nodes
+  gather_facts: true
+  vars:
+    backup_label: "2.6_rpm_pre_2.7_containerized"
+    aap_installer_dir: "{{ aap26_installer_dir }}"
+    aap_installer_inventory: "{{ aap26_installer_inventory_rpm }}"
+
+  roles:
+    - role: sos_report
+      vars:
+        sos_extra_args: "--all-logs"
+
+    - role: aap_backup

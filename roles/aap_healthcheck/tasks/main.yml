@@ -1,0 +1,103 @@
+---
+- name: Install healthcheck dependencies
+  ansible.builtin.package:
+    name:
+      - chrony
+      - curl
+      - util-linux
+      - tuned
+      - python3-requests
+    state: present
+
+- name: Gather package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: Set AAP package version facts
+  ansible.builtin.set_fact:
+    controller_rpm_check: >-
+      {{ (ansible_facts.packages['automation-controller'] | default([]) | first).version
+         | default('Not Present') }}
+    hub_rpm_check: >-
+      {{ (ansible_facts.packages['automation-hub'] | default([]) | first).version
+         | default('Not Present') }}
+    eda_rpm_check: >-
+      {{ (ansible_facts.packages['eda-controller'] | default([]) | first).version
+         | default('Not Present') }}
+
+- name: Validate service ports are listening
+  ansible.builtin.wait_for:
+    port: "{{ item.port }}"
+    timeout: 3
+    state: started
+  failed_when: false
+  changed_when: false
+  loop: "{{ aap_ports }}"
+  register: _port_checks
+
+- name: Check automation services status
+  ansible.builtin.shell: |
+    set -o pipefail
+    systemctl --no-pager --full status automation-controller 2>/dev/null || true
+    systemctl --no-pager --full status automation-gateway 2>/dev/null || true
+    systemctl --no-pager --full status automation-hub 2>/dev/null || true
+    systemctl --no-pager --full status receptor 2>/dev/null || true
+  args:
+    executable: /bin/bash
+  register: _svc_status
+  changed_when: false
+
+- name: Apply optional tuning limits
+  ansible.builtin.copy:
+    dest: /etc/security/limits.d/99-aap-healthcheck.conf
+    content: |
+      awx      soft    nofile    {{ max_open_files }}
+      awx      hard    nofile    {{ max_open_files }}
+      awx      soft    nproc     {{ max_process_limits }}
+      awx      hard    nproc     {{ max_process_limits }}
+      receptor soft    nofile    {{ max_open_files }}
+      receptor hard    nofile    {{ max_open_files }}
+    owner: root
+    group: root
+    mode: '0640'
+    backup: true
+  when: tune_system_limits | bool
+
+- name: Apply optional kernel overcommit tuning
+  ansible.posix.sysctl:
+    name: vm.overcommit_memory
+    value: "{{ sysctl_memory_overcommit | string }}"
+    state: present
+    reload: true
+  when: apply_kernel_memory_tweaks | bool
+
+- name: Apply optional tuned profile
+  ansible.builtin.command: tuned-adm profile {{ system_tuned_profile }}
+  changed_when: true
+  when: apply_tuned_profile | bool
+
+- name: Ensure local healthcheck reports dir exists
+  ansible.builtin.file:
+    path: "{{ healthcheck_report_dir_local }}"
+    state: directory
+    mode: '0755'
+  delegate_to: localhost
+  run_once: true
+
+- name: Write local healthcheck report
+  ansible.builtin.copy:
+    dest: "{{ healthcheck_report_dir_local }}/aap_healthcheck_{{ inventory_hostname }}.txt"
+    content: |
+      Host: {{ inventory_hostname }}
+      Controller RPM: {{ controller_rpm_check }}
+      Hub RPM: {{ hub_rpm_check }}
+      EDA RPM: {{ eda_rpm_check }}
+
+      Port checks:
+      {% for r in _port_checks.results | default([]) %}
+      - {{ r.item.port }} ({{ r.item.desc | default('n/a') }}): {{ 'open' if (r.failed is not defined or not r.failed) else 'closed/unreachable' }}
+      {% endfor %}
+
+      Service status:
+      {{ _svc_status.stdout | default('No output') }}
+  delegate_to: localhost

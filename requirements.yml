@@ -1,0 +1,15 @@
+---
+collections:
+  - name: awx.awx
+  - name: community.general
+  - name: ansible.posix
+  - name: community.vmware
+  - name: amazon.aws
+  - name: google.cloud
+  - name: azure.azcollection
+  - name: infra.controller_configuration
+  - name: infra.ah_configuration
+  - name: infra.eda_configuration
+  - name: infra.ee_utilities
+  - name: infra.aap_configuration
+  - name: infra.aap_utilities

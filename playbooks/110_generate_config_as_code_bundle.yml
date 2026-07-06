@@ -1,0 +1,8 @@
+---
+- name: Generate AAP config-as-code bundle
+  hosts: localhost
+  gather_facts: false
+  vars:
+    cac_output_dir: "{{ playbook_dir }}/../config_as_code"
+  roles:
+    - role: aap_configuration_as_code

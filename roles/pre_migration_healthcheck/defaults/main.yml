@@ -1,0 +1,9 @@
+---
+# Path to controller project files
+project_path: /var/lib/awx/projects
+
+# Local artifact directory (control node)
+artifact_dir_local: "{{ playbook_dir }}/../reports"
+
+# Whether to try to run podman images
+check_podman_images: true

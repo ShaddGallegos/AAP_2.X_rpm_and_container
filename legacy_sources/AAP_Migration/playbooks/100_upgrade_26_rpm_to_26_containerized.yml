@@ -1,0 +1,24 @@
+---
+- name: Upgrade AAP 2.6 RPM -> 2.6 containerized
+  hosts: aap_primary
+  gather_facts: true
+  vars:
+    stage_label: "upgrade_26_rpm_to_26_containerized"
+    stage_name: "2.6_containerized"
+    aap_installer_dir: "{{ aap26_installer_dir }}"
+    aap_installer_inventory: "{{ aap26_installer_inventory_rpm_to_containerized }}"
+
+  roles:
+    - role: aap_installer_run
+
+    - role: aap_validate
+
+- name: Write 2.6 containerized report (from 2.6 RPM)
+  hosts: localhost
+  gather_facts: false
+  vars:
+    stage_name: "2.6_containerized_from_26_rpm"
+    report_dir: "{{ playbook_dir }}/../reports"
+    snapshot_name: "{{ lookup('file', playbook_dir + '/../reports/last_snapshot_pre_26_containerized.txt', errors='ignore') | default('') | trim }}"
+  roles:
+    - role: migration_report

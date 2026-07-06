@@ -1,0 +1,26 @@
+---
+- name: Upgrade AAP 2.4 -> 2.5 (bridge)
+  hosts: aap_primary
+  gather_facts: true
+  vars:
+    stage_label: "upgrade_24_to_25"
+    stage_name: "2.5"
+    aap_installer_dir: "{{ aap25_installer_dir }}"
+    aap_installer_inventory: "{{ aap25_installer_inventory }}"
+
+  roles:
+    - role: aap_installer_run
+      vars:
+        aap_setup_extra_args: ""
+
+    - role: aap_validate
+
+- name: Write 2.5 report
+  hosts: localhost
+  gather_facts: false
+  vars:
+    stage_name: "2.5"
+    report_dir: "{{ playbook_dir }}/../reports"
+    snapshot_name: "{{ lookup('file', playbook_dir + '/../reports/last_snapshot_pre_24.txt', errors='ignore') | default('') | trim }}"
+  roles:
+    - role: migration_report

@@ -1,0 +1,22 @@
+---
+- name: Generate ansible.cfg from template
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    redhat_automation_hub_token: "{{ lookup('env', 'REDHAT_AH_TOKEN') | default('') }}"
+    ansible_log_path: "{{ lookup('env', 'ANSIBLE_LOG_PATH') | default('') }}"
+
+  tasks:
+    - name: Assert Ansible version is >= 2.14
+      assert:
+        that:
+          - ansible_version.full is version('2.14', '>=')
+        fail_msg: "This project requires Ansible >= 2.14. Detected {{ ansible_version.full }}"
+
+    - name: Render ansible.cfg from template
+      template:
+        src: "{{ playbook_dir }}/../templates/ansible.cfg.j2"
+        dest: "{{ playbook_dir }}/../ansible.cfg"
+        mode: '0644'

@@ -1,0 +1,39 @@
+---
+- name: Ensure local sosreports directory exists
+  ansible.builtin.file:
+    path: "{{ sos_local_dir }}"
+    state: directory
+    mode: '0755'
+  delegate_to: localhost
+  run_once: true
+
+- name: Install sos package if missing
+  ansible.builtin.package:
+    name: sos
+    state: present
+
+- name: Run sosreport (non-interactive)
+  ansible.builtin.command: >-
+    sos report --batch {{ sos_extra_args }}
+  register: _sos_run
+  changed_when: true
+
+- name: Find latest sosreport archive
+  ansible.builtin.shell: "ls -1t {{ sos_remote_dir }}/sosreport-*.tar.* 2>/dev/null | head -n 1"
+  register: _sos_latest
+  changed_when: false
+
+- name: Fail if sosreport archive not found
+  ansible.builtin.fail:
+    msg: "sosreport archive not found in {{ sos_remote_dir }}"
+  when: _sos_latest.stdout | length == 0
+
+- name: Fetch sosreport to control node
+  ansible.builtin.fetch:
+    src: "{{ _sos_latest.stdout }}"
+    dest: "{{ sos_local_dir }}/"
+    flat: true
+
+- name: Expose sosreport path
+  ansible.builtin.set_fact:
+    sosreport_local_file: "{{ sos_local_dir }}/{{ _sos_latest.stdout | basename }}"

@@ -1,0 +1,61 @@
+---
+- name: Resolve A record for {{ aap_host }}
+  ansible.builtin.command: getent hosts "{{ aap_host }}"
+  register: getent_host
+  changed_when: false
+  failed_when: getent_host.rc != 0
+
+- name: Extract IP from getent output
+  ansible.builtin.set_fact:
+    aap_host_ip: "{{ (getent_host.stdout.split() | first) }}"
+
+- name: Reverse lookup PTR for {{ aap_host_ip }}
+  ansible.builtin.command: getent hosts "{{ aap_host_ip }}"
+  register: getent_ptr
+  changed_when: false
+  failed_when: getent_ptr.rc != 0
+
+- name: Check TCP 443 reachability to {{ aap_host }}
+  ansible.builtin.wait_for:
+    host: "{{ aap_host }}"
+    port: 443
+    state: started
+    timeout: 5
+
+- name: Check TCP 22 reachability to {{ aap_host }}
+  ansible.builtin.wait_for:
+    host: "{{ aap_host }}"
+    port: 22
+    state: started
+    timeout: 5
+
+- name: Verify known_hosts contains {{ aap_host }}
+  ansible.builtin.command: ssh-keygen -F "{{ aap_host }}"
+  register: known_hosts_lookup
+  changed_when: false
+  failed_when: false
+
+- name: Add known_hosts entry for {{ aap_host }} when missing (optional)
+  when:
+    - fix_known_hosts | bool
+    - (known_hosts_lookup.rc != 0) or (known_hosts_lookup.stdout | length == 0)
+  block:
+    - name: Scan SSH host key for {{ aap_host }}
+      ansible.builtin.command: ssh-keyscan -T 5 -H "{{ aap_host }}"
+      register: ssh_scan
+      changed_when: false
+      failed_when: ssh_scan.rc != 0 or (ssh_scan.stdout | length) == 0
+
+    - name: Add {{ aap_host }} to known_hosts
+      ansible.builtin.known_hosts:
+        name: "{{ aap_host }}"
+        key: "{{ ssh_scan.stdout }}"
+        state: present
+
+- name: Test SSH key-based auth to {{ aap_host }} as {{ aap_ssh_user }}
+  ansible.builtin.command: >
+    ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=5
+    {{ aap_ssh_user }}@{{ aap_host }} true
+  register: ssh_auth_test
+  changed_when: false
+  failed_when: ssh_auth_test.rc != 0

@@ -1,0 +1,45 @@
+# AAP Migration Report — {{ stage_name }}
+
+Generated: {{ lookup('pipe','date -u +%Y-%m-%dT%H:%M:%SZ') }}
+
+## Snapshot
+
+{% if snapshot_name is defined and snapshot_name|length > 0 %}
+- VMware snapshot: `{{ snapshot_name }}`
+{% else %}
+- VMware snapshot: *(not recorded in this stage)*
+{% endif %}
+
+## Backups
+
+Remote backup directory (if used): `{{ backup_dir_remote | default('N/A') }}`
+
+Backups recorded per-host:
+{% for h in groups.get('aap_nodes', []) %}
+- {{ h }}
+  - Backup summary file (local): `{{ artifact_dir }}/backup_{{ stage_name }}_{{ h }}.txt`
+{% endfor %}
+
+## sosreport
+
+{% for h in groups.get('aap_nodes', []) %}
+- {{ h }}: {{ hostvars[h].sosreport_local_file | default('skipped / not collected') }}
+{% endfor %}
+
+## Validation
+
+{% for h in groups.get('aap_nodes', []) %}
+### {{ h }}
+
+- Controller ping: {{ hostvars[h].aap_validation.controller_ping_ok | default('skipped') }}
+
+Service status (excerpt):
+
+```text
+{{ (hostvars[h].aap_validation.service_status | default(''))[:4000] }}
+```
+{% endfor %}
+
+## Notes / Decisions
+
+- 

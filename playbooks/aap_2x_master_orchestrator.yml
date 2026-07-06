@@ -1,0 +1,30 @@
+---
+- name: Dispatch selected AAP 2.x migration scenario
+  hosts: localhost
+  gather_facts: false
+  vars:
+    aap_scenario: "{{ aap_scenario | default('24rpm_to_25rpm_to_26containerized') }}"
+    scenario_playbook_map:
+      healthcheck: "playbooks/06_aap_healthcheck.yml"
+      legacy_25rpm_to_26containerized: "playbooks/migrate_25rpm_to_26containerized_legacy.yml"
+      24rpm_to_25rpm_to_26containerized: "playbooks/migrate_24_25_26.yml"
+      26rpm_to_26containerized: "playbooks/migrate_26rpm_to_26containerized.yml"
+      26rpm_to_27containerized: "playbooks/migrate_26rpm_to_27containerized.yml"
+      26containerized_to_27containerized: "playbooks/migrate_26containerized_to_27containerized.yml"
+      26containerized_to_27openshift: "playbooks/migrate_26containerized_to_27openshift.yml"
+      26containerized_to_26openshift: "playbooks/migrate_26containerized_to_26openshift.yml"
+      generate_config_as_code: "playbooks/110_generate_config_as_code_bundle.yml"
+      recreate_environment_from_cac: "playbooks/111_recreate_environment_from_cac.yml"
+  tasks:
+    - name: Validate scenario key
+      ansible.builtin.assert:
+        that:
+          - aap_scenario in scenario_playbook_map
+        fail_msg: "Unsupported aap_scenario={{ aap_scenario }}. Supported: {{ scenario_playbook_map.keys() | list | join(', ') }}"
+
+    - name: Run selected scenario playbook
+      ansible.builtin.command: >-
+        ansible-playbook {{ scenario_playbook_map[aap_scenario] }}
+      args:
+        chdir: "{{ playbook_dir }}/.."
+      changed_when: true

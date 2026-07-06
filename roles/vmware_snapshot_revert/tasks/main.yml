@@ -1,0 +1,25 @@
+---
+- name: Validate VMware variables
+  ansible.builtin.assert:
+    that:
+      - vcenter_hostname is defined
+      - vcenter_username is defined
+      - vcenter_password is defined
+      - vcenter_datacenter is defined
+      - vmware_vm_names | length > 0
+      - vmware_snapshot_name is defined
+    fail_msg: "Missing required VMware variables or vmware_snapshot_name."
+
+- name: Revert snapshots for each VM
+  community.vmware.vmware_guest_snapshot:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: "{{ vcenter_validate_certs | default(false) }}"
+    datacenter: "{{ vcenter_datacenter }}"
+    folder: "{{ vcenter_folder | default('/') }}"
+    name: "{{ item }}"
+    state: revert
+    snapshot_name: "{{ vmware_snapshot_name }}"
+  loop: "{{ vmware_vm_names }}"
+  delegate_to: localhost

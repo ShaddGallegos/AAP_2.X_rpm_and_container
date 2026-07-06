@@ -1,0 +1,36 @@
+---
+- name: Validate VMware variables
+  ansible.builtin.assert:
+    that:
+      - vcenter_hostname is defined
+      - vcenter_username is defined
+      - vcenter_password is defined
+      - vcenter_datacenter is defined
+      - vmware_vm_names | length > 0
+    fail_msg: "Missing required VMware variables. See group_vars/all.yml.example."
+
+- name: Build snapshot name
+  ansible.builtin.set_fact:
+    _snapshot_name: >-
+      {{ snapshot_prefix }}_{{ snapshot_label | default('') | trim | default('SNAP') }}_{{ lookup('pipe','date +%Y%m%d_%H%M%S') }}
+
+- name: Create snapshots for each VM
+  community.vmware.vmware_guest_snapshot:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: "{{ vcenter_validate_certs }}"
+    datacenter: "{{ vcenter_datacenter }}"
+    folder: "{{ vcenter_folder | default('/') }}"
+    name: "{{ item }}"
+    state: present
+    snapshot_name: "{{ _snapshot_name }}"
+    description: "AAP migration snapshot: {{ snapshot_label }}"
+    memory_dump: "{{ snapshot_memory }}"
+    quiesce: "{{ snapshot_quiesce }}"
+  loop: "{{ vmware_vm_names }}"
+  delegate_to: localhost
+
+- name: Expose snapshot name for downstream steps
+  ansible.builtin.set_fact:
+    vmware_snapshot_name: "{{ _snapshot_name }}"

@@ -1,0 +1,8 @@
+---
+- name: Load defaults from project role
+  ansible.builtin.include_vars:
+    file: "{{ role_path }}/../../../roles/aap_restore/defaults/main.yml"
+
+- name: Run project aap_restore role tasks
+  ansible.builtin.include_tasks:
+    file: "{{ role_path }}/../../../roles/aap_restore/tasks/main.yml"

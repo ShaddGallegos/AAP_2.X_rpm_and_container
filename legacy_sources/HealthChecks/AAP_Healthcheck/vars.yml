@@ -1,0 +1,28 @@
+---
+# ======================================================================
+# AAP USER CONFIGURED SELECTION ENGINE
+# ======================================================================
+
+# 1. Performance System Limits Configurations
+# Elevated file descriptor boundaries crucial for intense concurrent automation fork streams
+max_open_files: 65536
+max_process_limits: 32768
+
+# 2. Kernel Memory Management Configuration
+# 1 = Kernel allows memory overcommits (Optimal for heavy gunicorn/celery processing forks)
+sysctl_memory_overcommit: 1
+
+# 3. Architecture Tuning Profile Selection
+# 'throughput-performance' optimizes long-running multi-threaded task forks
+# 'network-latency' is an alternative option for extremely dynamic cluster API configurations
+system_tuned_profile: "throughput-performance"
+
+# 4. Automation Action Toggles (Enforce changes automatically)
+tune_system_limits: true
+disable_transparent_hugepages: true
+apply_kernel_memory_tweaks: true
+apply_tuned_profile: true
+
+# 5. Endpoint Validation Controls
+validate_platform_certs: false
+show_help: false
