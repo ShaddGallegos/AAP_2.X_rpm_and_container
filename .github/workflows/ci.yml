@@ -1,0 +1,40 @@
+name: AAP 2.X CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  syntax-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible ansible-lint yamllint
+
+      - name: Install Ansible collections
+        run: ansible-galaxy collection install -r requirements.yml
+
+      - name: Validate playbook syntax
+        run: bash scripts/validate_all_playbooks.sh
+
+      - name: YAML lint
+        run: yamllint -d "{extends: relaxed, rules: {line-length: disable}}" .
+
+      - name: Ansible lint (minimum profile)
+        run: |
+          ansible-lint --profile min \
+            playbooks/aap_2x_master_orchestrator.yml \
+            playbooks/06_aap_healthcheck.yml \
+            playbooks/110_generate_config_as_code_bundle.yml \
+            playbooks/111_recreate_environment_from_cac.yml

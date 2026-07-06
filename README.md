@@ -95,6 +95,16 @@ Install collections:
 ansible-galaxy collection install -r requirements.yml
 ```
 
+Run full syntax validation locally:
+
+```bash
+make validate-all
+```
+
+CI pipeline:
+
+- `.github/workflows/ci.yml` runs playbook syntax checks, `yamllint`, and `ansible-lint` on push and pull requests.
+
 ## Disaster Recovery Reminder
 
 Before DR or rebuild runs, copy your existing environment and vault pass files into place so the same encrypted context is reused:
@@ -104,6 +114,8 @@ Before DR or rebuild runs, copy your existing environment and vault pass files i
 
 Keep those files secured and available on your control node.
 
-## Legacy Source Preservation
+## Project Hygiene
 
-Original project snapshots are preserved under legacy_sources/ for traceability.
+- Keep inventories and vault files outside source control.
+- Rotate API tokens and registry credentials periodically.
+- Run healthcheck before and after every migration path execution.

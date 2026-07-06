@@ -1,5 +1,5 @@
 ---
-# Top-level orchestrator to run the full AAP_Migration project
+# Top-level orchestrator to run the unified AAP_2.X_rpm_and_container project
 # Usage:
 #   ansible-playbook setup-site.yml
 # Optional:

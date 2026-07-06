@@ -6,7 +6,7 @@ GEN_PLAYBOOK := playbooks/generate_ansible_cfg.yml
 REDHAT_AH_TOKEN ?=
 EXTRA_E ?=
 
-.PHONY: deps cfg inventory syntax dry-run smoke preflight clean
+.PHONY: deps cfg inventory syntax validate-all dry-run smoke preflight clean
 
 # Install required collections
 deps:
@@ -29,6 +29,9 @@ inventory:
 syntax:
 > @if [ -z "$(CHECK_PLAYBOOK)" ]; then echo "Set CHECK_PLAYBOOK=<path/to/playbook.yml>"; exit 1; fi
 > ansible-playbook -i "$(ANSIBLE_INVENTORY)" "$(CHECK_PLAYBOOK)" --syntax-check $(EXTRA_E)
+
+validate-all:
+> AAP_INVENTORY="$(ANSIBLE_INVENTORY)" bash scripts/validate_all_playbooks.sh
 
 dry-run:
 > @if [ -z "$(CHECK_PLAYBOOK)" ]; then echo "Set CHECK_PLAYBOOK=<path/to/playbook.yml>"; exit 1; fi
