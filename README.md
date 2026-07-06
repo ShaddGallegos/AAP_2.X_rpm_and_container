@@ -101,6 +101,12 @@ Run full syntax validation locally:
 make validate-all
 ```
 
+Run scenario-chain validation locally (required vars + syntax checks):
+
+```bash
+make validate-scenario SCENARIO=26containerized_to_27openshift
+```
+
 CI pipeline:
 
 - `.github/workflows/ci.yml` runs playbook syntax checks, `yamllint`, and `ansible-lint` on push and pull requests.

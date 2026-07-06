@@ -6,7 +6,7 @@ GEN_PLAYBOOK := playbooks/generate_ansible_cfg.yml
 REDHAT_AH_TOKEN ?=
 EXTRA_E ?=
 
-.PHONY: deps cfg inventory syntax validate-all dry-run smoke preflight clean
+.PHONY: deps cfg inventory syntax validate-all validate-scenario dry-run smoke preflight clean
 
 # Install required collections
 deps:
@@ -32,6 +32,10 @@ syntax:
 
 validate-all:
 > AAP_INVENTORY="$(ANSIBLE_INVENTORY)" bash scripts/validate_all_playbooks.sh
+
+validate-scenario:
+> @if [ -z "$(SCENARIO)" ]; then echo "Set SCENARIO=<scenario-key>"; exit 1; fi
+> AAP_INVENTORY="$(ANSIBLE_INVENTORY)" bash scripts/validate_scenario_chain.sh "$(SCENARIO)"
 
 dry-run:
 > @if [ -z "$(CHECK_PLAYBOOK)" ]; then echo "Set CHECK_PLAYBOOK=<path/to/playbook.yml>"; exit 1; fi
