@@ -9,6 +9,44 @@ This project merges:
 
 into a single automation project for AAP 2.x migrations, upgrades, backups, restores, healthchecks, and configuration-as-code disaster recovery workflows.
 
+## How To Run
+
+From the project root:
+
+```bash
+cd /home/sgallego/GIT/AAP_2.X_rpm_and_container
+./scripts/aap_2x_menu.sh
+```
+
+The menu is the easiest way to run healthchecks, migrations, restores, and configuration-as-code workflows. If Ansible tooling is missing or broken, the scripts auto-create a local `.venv` and install the required packages.
+
+Direct commands:
+
+```bash
+make validate-all
+```
+
+```bash
+make validate-scenario SCENARIO=26containerized_to_27openshift
+```
+
+```bash
+ansible-playbook playbooks/migrate_26rpm_to_27containerized.yml --ask-vault-pass
+```
+
+```bash
+ansible-playbook playbooks/06_aap_healthcheck.yml
+```
+
+```bash
+ansible-playbook playbooks/110_generate_config_as_code_bundle.yml --ask-vault-pass
+```
+
+For disaster recovery, keep these files copied locally so you can reuse the same environment and vault context:
+
+- ~/.ansible/conf/env.yml
+- ~/.ansible/conf/.vaultpass.txt
+
 ## Included Capabilities
 
 - Backup and restore playbooks for RPM and containerized stages.
