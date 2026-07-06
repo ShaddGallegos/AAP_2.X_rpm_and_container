@@ -1,8 +1,0 @@
----
-- name: Load defaults from project role
-  ansible.builtin.include_vars:
-    file: "{{ role_path }}/../../../roles/sos_report/defaults/main.yml"
-
-- name: Run project sos_report role tasks
-  ansible.builtin.include_tasks:
-    file: "{{ role_path }}/../../../roles/sos_report/tasks/main.yml"

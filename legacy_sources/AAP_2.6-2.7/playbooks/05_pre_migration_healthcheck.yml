@@ -1,8 +1,0 @@
----
-- name: AAP 2.4 → 2.6 Pre-migration Health Check
-  hosts: aap_nodes
-  gather_facts: true
-  become: true
-  roles:
-    - role: preflight_asserts
-    - role: pre_migration_healthcheck

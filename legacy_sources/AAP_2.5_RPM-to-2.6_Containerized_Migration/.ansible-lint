@@ -1,9 +1,0 @@
----
-# Temporary local lint config to validate this migration role cleanly.
-use_default_rules: true
-offline: true
-exclude_paths:
-  - .git/
-  - .venv/
-  - venv/
-  - __pycache__/

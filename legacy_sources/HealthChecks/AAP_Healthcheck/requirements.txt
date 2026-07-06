@@ -1,6 +1,0 @@
-ansible-core>=2.16.0
-ansible-runner>=2.4.0
-requests>=2.32.0
-urllib3>=2.2.0
-ansible-lint
-yamllint

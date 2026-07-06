@@ -1,8 +1,0 @@
----
-- name: Detect platform and prepare controller (RHEL 9/10)
-  hosts: localhost
-  gather_facts: true
-  vars:
-    project_root: "{{ playbook_dir | dirname }}"
-  roles:
-    - platform_setup

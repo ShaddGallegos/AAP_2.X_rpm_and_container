@@ -1,8 +1,0 @@
----
-- name: Functional smoke test against Controller (AAP 2.6)
-  hosts: localhost
-  gather_facts: false
-  vars:
-    smoke_stage_label: "2.6"
-  roles:
-    - role: aap_controller_smoke
