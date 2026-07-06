@@ -4,6 +4,50 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ANSIBLE_CONFIG="${PROJECT_ROOT}/ansible.cfg"
 export ANSIBLE_CONFIG
+export ANSIBLE_ROLES_PATH="${PROJECT_ROOT}/roles:${PROJECT_ROOT}/playbooks/roles"
+VENV_DIR="${AAP_VENV_DIR:-$PROJECT_ROOT/.venv}"
+ANSIBLE_PLAYBOOK_BIN=""
+
+ensure_ansible_tooling() {
+  if command -v ansible-playbook >/dev/null 2>&1 && ansible-playbook --version >/dev/null 2>&1; then
+    ANSIBLE_PLAYBOOK_BIN="$(command -v ansible-playbook)"
+    return
+  fi
+
+  if [[ "${AAP_AUTO_VENV:-1}" != "1" ]]; then
+    echo "ansible-playbook not found in PATH and AAP_AUTO_VENV is disabled"
+    exit 1
+  fi
+
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required to create a virtual environment"
+    exit 1
+  fi
+
+  if [[ ! -d "$VENV_DIR" ]]; then
+    echo "Creating virtual environment at $VENV_DIR"
+    python3 -m venv "$VENV_DIR"
+  fi
+
+  # shellcheck disable=SC1090
+  source "$VENV_DIR/bin/activate"
+  hash -r
+
+  if ! command -v ansible-playbook >/dev/null 2>&1 || ! ansible-playbook --version >/dev/null 2>&1; then
+    echo "Installing Ansible tooling into $VENV_DIR"
+    python -m pip install --upgrade pip >/dev/null
+    pip install ansible ansible-lint yamllint >/dev/null
+    hash -r
+  fi
+
+  if [[ -x "$VENV_DIR/bin/ansible-playbook" ]]; then
+    ANSIBLE_PLAYBOOK_BIN="$VENV_DIR/bin/ansible-playbook"
+  else
+    ANSIBLE_PLAYBOOK_BIN="$(command -v ansible-playbook)"
+  fi
+}
+
+ensure_ansible_tooling
 
 run_playbook() {
   local pb="$1"
@@ -11,7 +55,7 @@ run_playbook() {
   echo
   echo "Running: ${pb} $*"
   echo
-  ansible-playbook "${PROJECT_ROOT}/${pb}" "$@"
+  "$ANSIBLE_PLAYBOOK_BIN" "${PROJECT_ROOT}/${pb}" "$@"
 }
 
 restore_menu() {

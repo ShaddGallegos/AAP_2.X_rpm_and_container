@@ -30,18 +30,18 @@ show_help: false
 healthcheck_report_dir_local: "{{ playbook_dir }}/../reports"
 
 aap_ports:
-	- port: 80
-		proto: tcp
-		desc: Platform HTTP Gateway / Redirect
-	- port: 443
-		proto: tcp
-		desc: Platform HTTPS Gateway
-	- port: 5432
-		proto: tcp
-		desc: PostgreSQL Datastore Layer Socket
-	- port: 6379
-		proto: tcp
-		desc: Redis Cache Internal Messaging Bus
-	- port: 7899
-		proto: tcp
-		desc: Receptor Mesh Inter-Node Link Socket
+  - port: 80
+    proto: tcp
+    desc: Platform HTTP Gateway / Redirect
+  - port: 443
+    proto: tcp
+    desc: Platform HTTPS Gateway
+  - port: 5432
+    proto: tcp
+    desc: PostgreSQL Datastore Layer Socket
+  - port: 6379
+    proto: tcp
+    desc: Redis Cache Internal Messaging Bus
+  - port: 7899
+    proto: tcp
+    desc: Receptor Mesh Inter-Node Link Socket

@@ -101,6 +101,11 @@ Run full syntax validation locally:
 make validate-all
 ```
 
+If Ansible tooling is missing on the host, the scripts auto-create `.venv` and install required packages.
+
+- Disable auto-venv creation: `AAP_AUTO_VENV=0`
+- Override venv path: `AAP_VENV_DIR=/path/to/venv`
+
 Run scenario-chain validation locally (required vars + syntax checks):
 
 ```bash
