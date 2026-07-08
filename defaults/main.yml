@@ -1,0 +1,4 @@
+---
+aap_2_x_rpm_and_container_use_local_defaults_env: true
+aap_2_x_rpm_and_container_defaults_env_file: "{{ playbook_dir | dirname }}/defaults/env.yml"
+aap_2_x_rpm_and_container_local_defaults_precedence: "noninteractive"

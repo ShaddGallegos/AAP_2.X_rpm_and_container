@@ -1,4 +1,12 @@
 ---
+# Global safety mode.
+# When true, launcher uses Ansible check mode and roles should avoid system changes.
+aap_report_only_mode: true
+
+# Explicitly keep tuning and registration-like actions disabled in report-only runs.
+aap_enable_tuning: false
+aap_allow_registration_changes: false
+
 # VMware (snapshot) settings
 vcenter_hostname: "vcenter.example.com"
 vcenter_username: "administrator@vsphere.local"

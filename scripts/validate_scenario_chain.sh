@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 export ANSIBLE_CONFIG="$ROOT_DIR/ansible.cfg"
-export ANSIBLE_ROLES_PATH="$ROOT_DIR/roles:$ROOT_DIR/playbooks/roles"
+export ANSIBLE_ROLES_PATH="$ROOT_DIR/roles"
 
 VENV_DIR="${AAP_VENV_DIR:-$ROOT_DIR/.venv}"
 ANSIBLE_PLAYBOOK_BIN=""

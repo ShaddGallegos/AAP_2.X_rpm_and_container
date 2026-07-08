@@ -1,0 +1,16 @@
+---
+- name: Backup AAP stage with sosreport
+  hosts: aap_nodes
+  gather_facts: true
+  vars:
+    backup_label: "{{ backup_label | default('aap_backup') }}"
+    aap_installer_dir: "{{ aap_installer_dir | default('') }}"
+    aap_installer_inventory: "{{ aap_installer_inventory | default('') }}"
+    sos_extra_args: "{{ sos_extra_args | default('--all-logs') }}"
+
+  roles:
+    - role: sos_report
+      vars:
+        sos_extra_args: "{{ sos_extra_args }}"
+
+    - role: aap_backup

@@ -1,8 +1,0 @@
----
-- name: Load defaults from project role
-  ansible.builtin.include_vars:
-    file: "{{ role_path }}/../../../roles/aap_controller_smoke/defaults/main.yml"
-
-- name: Run project aap_controller_smoke role tasks
-  ansible.builtin.include_tasks:
-    file: "{{ role_path }}/../../../roles/aap_controller_smoke/tasks/main.yml"

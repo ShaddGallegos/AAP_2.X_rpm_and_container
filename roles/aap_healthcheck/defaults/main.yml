@@ -18,10 +18,13 @@ sysctl_memory_overcommit: 1
 system_tuned_profile: "throughput-performance"
 
 # 4. Automation Action Toggles (Enforce changes automatically)
-tune_system_limits: true
+tune_system_limits: "{{ (aap_enable_tuning | default(false)) | bool and not (aap_report_only_mode | default(true)) | bool }}"
 disable_transparent_hugepages: true
-apply_kernel_memory_tweaks: true
-apply_tuned_profile: true
+apply_kernel_memory_tweaks: "{{ (aap_enable_tuning | default(false)) | bool and not (aap_report_only_mode | default(true)) | bool }}"
+apply_tuned_profile: "{{ (aap_enable_tuning | default(false)) | bool and not (aap_report_only_mode | default(true)) | bool }}"
+
+# In report-only mode, do not install packages on managed nodes.
+healthcheck_install_dependencies: "{{ not (aap_report_only_mode | default(true)) | bool }}"
 
 # 5. Endpoint Validation Controls
 validate_platform_certs: false

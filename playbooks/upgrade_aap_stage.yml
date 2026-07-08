@@ -1,0 +1,35 @@
+---
+- name: Run AAP upgrade stage
+  hosts: aap_primary
+  gather_facts: true
+  vars:
+    stage_label: "{{ stage_label | default('upgrade_stage') }}"
+    stage_name: "{{ stage_name | default('upgrade_stage') }}"
+    aap_installer_dir: "{{ aap_installer_dir | default('') }}"
+    aap_installer_inventory: "{{ aap_installer_inventory | default('') }}"
+    aap_installer_command: "{{ aap_installer_command | default('') }}"
+    upgrade_role_name: "{{ upgrade_role_name | default('') }}"
+    aap_setup_extra_args: "{{ aap_setup_extra_args | default('') }}"
+    upgrade_validate: "{{ upgrade_validate | default(false) }}"
+
+  tasks:
+    - name: Run selected upgrade role
+      ansible.builtin.include_role:
+        name: "{{ upgrade_role_name }}"
+      vars:
+        aap_setup_extra_args: "{{ aap_setup_extra_args }}"
+
+    - name: Validate upgraded platform
+      ansible.builtin.include_role:
+        name: aap_validate
+      when: upgrade_validate | bool
+
+- name: Write upgrade report
+  hosts: localhost
+  gather_facts: false
+  vars:
+    stage_name: "{{ report_stage_name | default(stage_name) }}"
+    report_dir: "{{ playbook_dir }}/../reports"
+    snapshot_name: "{{ report_snapshot_name | default('') }}"
+  roles:
+    - role: migration_report

@@ -8,6 +8,7 @@
       - tuned
       - python3-requests
     state: present
+  when: healthcheck_install_dependencies | bool
 
 - name: Gather package facts
   ansible.builtin.package_facts:

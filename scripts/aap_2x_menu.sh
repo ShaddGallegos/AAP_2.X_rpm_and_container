@@ -4,9 +4,10 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ANSIBLE_CONFIG="${PROJECT_ROOT}/ansible.cfg"
 export ANSIBLE_CONFIG
-export ANSIBLE_ROLES_PATH="${PROJECT_ROOT}/roles:${PROJECT_ROOT}/playbooks/roles"
+export ANSIBLE_ROLES_PATH="${PROJECT_ROOT}/roles"
 VENV_DIR="${AAP_VENV_DIR:-$PROJECT_ROOT/.venv}"
 ANSIBLE_PLAYBOOK_BIN=""
+AAP_REPORT_ONLY_MODE="${AAP_REPORT_ONLY_MODE:-1}"
 
 ensure_ansible_tooling() {
   if command -v ansible-playbook >/dev/null 2>&1 && ansible-playbook --version >/dev/null 2>&1; then
@@ -52,10 +53,16 @@ ensure_ansible_tooling
 run_playbook() {
   local pb="$1"
   shift || true
+  local -a run_args=()
+
+  if [[ "$AAP_REPORT_ONLY_MODE" == "1" ]]; then
+    run_args+=(--check)
+  fi
+
   echo
-  echo "Running: ${pb} $*"
+  echo "Running: ${pb} ${run_args[*]} $*"
   echo
-  "$ANSIBLE_PLAYBOOK_BIN" "${PROJECT_ROOT}/${pb}" "$@"
+  "$ANSIBLE_PLAYBOOK_BIN" "${PROJECT_ROOT}/${pb}" "${run_args[@]}" "$@"
 }
 
 restore_menu() {
@@ -128,6 +135,11 @@ config_as_code_menu() {
 while true; do
   echo
   echo "AAP 2.X RPM and Container Operations"
+  if [[ "$AAP_REPORT_ONLY_MODE" == "1" ]]; then
+    echo "Mode: REPORT-ONLY (Ansible check mode enabled, no system changes)"
+  else
+    echo "Mode: APPLY-CHANGES"
+  fi
   echo "1) Healthcheck and tuning"
   echo "2) Migrations and upgrades"
   echo "3) Restore from backup"
